@@ -47,3 +47,10 @@ class EditProfileForm(FlaskForm):
             user = mongo.db.usuario.find_one({"_id": self.username.data})
             if user is not None:
                 raise ValidationError("Please use a different username.")
+
+class PostForm(FlaskForm):
+    post = TextAreaField("Escreva algo", validators=[
+        DataRequired(), Length(min=1, max=140)
+    ])
+    submit = SubmitField('Salvar')
+

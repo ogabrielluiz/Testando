@@ -1,18 +1,23 @@
 from app import App, mongo
 from flask import render_template, flash, redirect, url_for, request
 from flask_login import current_user, login_user, logout_user, login_required
-from app.forms import LoginForm, RegistrationForm, EditProfileForm
-from app.models import Usuario
+from app.forms import LoginForm, RegistrationForm, EditProfileForm, PostForm
+from app.models import Usuario, Post
 from werkzeug.urls import url_parse
 from werkzeug.security import generate_password_hash
 from datetime import datetime
 
 
-@App.route('/')
-@App.route('/index')
+@App.route('/', methods=["GET", "POST"])
+@App.route('/index', methods=["GET", "POST"])
 @login_required
 def index():
-    user = {'username': 'Gabriel'}
+    form = PostForm()
+    if form.validate_on_submit():
+
+        mongo.db.post.insert_one({"body": form.post.data, "author": current_user.id})
+        flash("Seu post é um sucesso!")
+        return redirect(url_for('index'))
 
     posts = [
         {
@@ -23,7 +28,7 @@ def index():
          }
     ]
 
-    return render_template('index.html', title='Home', posts=posts)
+    return render_template('index.html', title='Home', posts=posts, form=form)
 
 
 @App.route('/login', methods=['GET', 'POST'])
