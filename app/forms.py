@@ -1,6 +1,7 @@
 from flask_wtf import FlaskForm
 from wtforms import StringField, PasswordField, BooleanField, SubmitField
-from wtforms.validators import DataRequired, ValidationError, Email, EqualTo
+from wtforms import TextAreaField
+from wtforms.validators import DataRequired, ValidationError, Email, EqualTo, Length
 from app.models import Usuario
 from app import mongo
 
@@ -30,3 +31,26 @@ class RegistrationForm(FlaskForm):
         user = mongo.db.usuario.find_one({"email": email.data})
         if user is not None:
             raise ValidationError("Escolha um email diferente.")
+
+class EditProfileForm(FlaskForm):
+
+    username = StringField('Username', validators=[DataRequired()])
+    about_me = TextAreaField('Sobre mim', validators=[Length(min=0, max=140)])
+    submit = SubmitField('Salvar')
+
+    def __init__(self,original_username,*args, **kwargs):
+        super(EditProfileForm, self).__init__(*args, **kwargs)
+        self.original_username = original_username
+
+    def validate_username(self, username):
+        if username.data != self.original_username:
+            user = mongo.db.usuario.find_one({"_id": self.username.data})
+            if user is not None:
+                raise ValidationError("Please use a different username.")
+
+class PostForm(FlaskForm):
+    post = TextAreaField("Escreva algo", validators=[
+        DataRequired(), Length(min=1, max=140)
+    ])
+    submit = SubmitField('Salvar')
+
