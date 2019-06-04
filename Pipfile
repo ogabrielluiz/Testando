@@ -10,6 +10,11 @@ flask-wtf = "*"
 flask-pymongo = "*"
 flask-login = "*"
 
+mockupdb = "*"
+flask-update = "*"
+flask-mail = "*"
+pyjwt = "*"
+
 [dev-packages]
 
 [requires]

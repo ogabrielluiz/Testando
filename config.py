@@ -5,11 +5,15 @@ class Config(object):
     MONGO_URI = "mongodb://localhost:27017/testando"
 
     #Email
-    MAIL_SERVER = os.environ.get('MAIL_SERVER')
-    MAIL_PORT = int(os.environ.get('MAIL_PORT') or 25)
-    MAIL_USE_TLS = os.environ.get('MAIL_USE_TLS') is not None
-    MAIL_USERNAME = os.environ.get('MAIL_USERNAME')
-    MAIL_PASSWORD = os.environ.get('MAIL_PASSWORD')
-    ADMINS = ['contato@ogabrielluiz.dev']
+    MAIL_SERVER = 'debugmail.io'
+    MAIL_PORT = 25
+    MAIL_USERNAME = 'gabrielf.almeida90@gmail.com'
+    MAIL_PASSWORD = '3ac445a0-865e-11e9-8b65-7d073a390350'
+    MAIL_USE_TLS = True
+    MAIL_USE_SSL = False
+    ADMINS = ['gabrielf.almeida90@gmail.com']
+
+    #Pagination
+    POSTS_PER_PAGE = 25
 
 

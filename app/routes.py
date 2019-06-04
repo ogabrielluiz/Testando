@@ -1,11 +1,14 @@
 from app import App, mongo
 from flask import render_template, flash, redirect, url_for, request
 from flask_login import current_user, login_user, logout_user, login_required
-from app.forms import LoginForm, RegistrationForm, EditProfileForm, PostForm
+from app.forms import LoginForm, RegistrationForm, EditProfileForm, PostForm, ResetPasswordRequestForm
+from app.forms import ResetPasswordForm
 from app.models import Usuario, Post
 from werkzeug.urls import url_parse
 from werkzeug.security import generate_password_hash
 from datetime import datetime
+from app.db import get_post_objects, paginate
+from app.email import send_password_reset_email
 
 
 @App.route('/', methods=["GET", "POST"])
@@ -19,16 +22,16 @@ def index():
         flash("Seu post é um sucesso!")
         return redirect(url_for('index'))
 
-    posts = [
-        {
-            'author': {'username': 'John'},
-            'body': 'The Avengers movie as so cool'},
-        {'author': {'username': 'Susan'},
-         'body': 'The Avengers movie as so cool'
-         }
-    ]
+    page = request.args.get('page', 1, type=int)
+    next_page = page + 1
+    prev_page = page - 1
+    cursor = paginate(current_user.id, page, App.config['POSTS_PER_PAGE'])
+    posts = get_post_objects(cursor)
 
-    return render_template('index.html', title='Home', posts=posts, form=form)
+    next_url = url_for('index', page= next_page)
+    prev_url = url_for('index', page= prev_page)
+
+    return render_template('index.html', title='Home', form=form, posts=posts, next_url=next_url, prev_url=prev_url)
 
 
 @App.route('/login', methods=['GET', 'POST'])
@@ -70,7 +73,11 @@ def register():
         pw = form.password.data
         pwhash = generate_password_hash(pw)
 
-        mongo.db.usuario.insert_one({"_id": nome_usuario, "email": email, "pwhash": pwhash})
+        mongo.db.usuario.insert_one({"_id": nome_usuario,
+                                     "email": email,
+                                     "pwhash": pwhash,
+                                     "about_me": '',
+                                     "last_seen": ''})
         flash("Registro bem sucedido!")
         return redirect(url_for('login'))
     return render_template('register.html', title='Register', form=form)
@@ -80,11 +87,16 @@ def register():
 @login_required
 def user(username):
     user = Usuario(mongo.db.usuario.find_one_or_404({"_id": username}))
-    posts = [
-        {'author': user, 'body': 'Test post 1'},
-        {'author': user, 'body': 'Test post 2'}
-    ]
-    return render_template('user.html', user=user, posts=posts)
+    page = request.args.get('page', 1, type=int)
+    next_page = page + 1
+    prev_page = page - 1
+
+    cursor = paginate(current_user.id, page, App.config['POSTS_PER_PAGE'])
+    posts = get_post_objects(cursor)
+
+    next_url = url_for('user', username=user.id, page=next_page)
+    prev_url = url_for('user', username=user.id, page=prev_page)
+    return render_template('user.html', user=user, posts=posts, next_url=next_url, prev_url=prev_url)
 
 
 @App.route('/edit_profile', methods=['GET', 'POST'])
@@ -115,3 +127,31 @@ def before_request():
     if current_user.is_authenticated:
         last_seen = datetime.utcnow()
         mongo.db.usuario.update_one({"_id": current_user.id}, {"$set": {"last_seen": last_seen}}, upsert=True)
+
+@App.route('/reset_password_request', methods=['GET','POST'])
+def reset_password_request():
+    if current_user.is_authenticated:
+        return redirect(url_for('index'))
+    form = ResetPasswordRequestForm()
+    if form.validate_on_submit():
+        user = Usuario(mongo.db.usuario.find_one_or_404({"email": form.email.data}))
+        if user:
+            send_password_reset_email(user)
+        flash('Check your email for the instructions to reset your password')
+        return redirect(url_for('login'))
+    return render_template('reset_password_request.html', title='Reset Password', form=form)
+
+@App.route('/reset_password/<token>', methods=['GET','POST'])
+def reset_password(token):
+    if current_user.is_authenticated:
+        return redirect(url_for('index'))
+    user = Usuario.verify_reset_password_token(token)
+    if not user:
+        return redirect(url_for('index'))
+    form =  ResetPasswordForm()
+    if form.validate_on_submit():
+        user.set_password(form.password.data)
+        mongo.db.usuario.update_one({"_id": current_user.id}, {"$set": {"pwhash": user.pwhash}})
+        flash("Your password has been reset.")
+        return redirect(url_for('login'))
+    return render_template('reset_password.html', form=form)

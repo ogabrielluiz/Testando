@@ -20,6 +20,10 @@
         {%  endfor %}
     </p>
 <p>New User? <a href="{{  url_for('register') }}">Registre-se</a></p>
+<p>
+    Forgot your Password?
+    <a href="{{  url_for('reset_password_request') }}">Click to reset it</a>
+</p>
     <p> {{ form.remember_me() }} {{  form.remember_me.label }}</p>
     <p>{{ form.submit() }}</p>
 </form>
