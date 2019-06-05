@@ -3,6 +3,7 @@ from config import Config
 from flask_pymongo import PyMongo
 from flask_login import LoginManager
 from flask_mail import Mail
+from flask_bootstrap import Bootstrap
 import logging
 from logging.handlers import SMTPHandler, RotatingFileHandler
 import os
@@ -13,6 +14,7 @@ App = Flask(__name__)
 App.config.from_object(Config)
 mongo = PyMongo(App)
 mail = Mail(App)
+bootstrap = Bootstrap(App)
 
 login = LoginManager(App)
 login.login_view = 'login'

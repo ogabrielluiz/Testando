@@ -9,11 +9,11 @@ python-dotenv = "*"
 flask-wtf = "*"
 flask-pymongo = "*"
 flask-login = "*"
-
 mockupdb = "*"
 flask-update = "*"
 flask-mail = "*"
 pyjwt = "*"
+flask-bootstrap = "*"
 
 [dev-packages]
 

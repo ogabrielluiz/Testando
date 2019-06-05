@@ -25,11 +25,19 @@ def index():
     page = request.args.get('page', 1, type=int)
     next_page = page + 1
     prev_page = page - 1
+    if prev_page < 1:
+        prev_page = 1
+
     cursor = paginate(current_user.id, page, App.config['POSTS_PER_PAGE'])
     posts = get_post_objects(cursor)
 
-    next_url = url_for('index', page= next_page)
-    prev_url = url_for('index', page= prev_page)
+    next_url = None
+    if len(posts) == App.config['POSTS_PER_PAGE']:
+        next_url = url_for('index', page=next_page)
+    else:
+        None
+
+    prev_url = url_for('index', page=prev_page)
 
     return render_template('index.html', title='Home', form=form, posts=posts, next_url=next_url, prev_url=prev_url)
 
@@ -40,8 +48,12 @@ def login():
         return redirect(url_for('index'))
     form = LoginForm()
     if form.validate_on_submit():
-
-        u = Usuario(mongo.db.usuario.find_one({"_id": form.username.data}))
+        query = mongo.db.usuario.find_one({"_id": form.username.data})
+        try:
+            u = Usuario(query)
+        except TypeError as _:
+            flash("Invalid username or password")
+            return redirect(url_for('login'))
 
         if u is None or not u.check_password(u.pwhash, form.password.data):
             flash("Invalid username or password")
