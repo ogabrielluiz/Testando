@@ -1,5 +1,6 @@
 from app import mongo
-from  app.models import load_user, Post
+from app.models import load_user, Post
+from datetime import datetime
 
 
 def paginate(current_user_id, page_num, posts_per_page):

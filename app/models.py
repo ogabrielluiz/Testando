@@ -1,13 +1,13 @@
 import datetime
 from datetime import datetime
 from app import mongo, login
-
+from flask import current_app
 from werkzeug.security import generate_password_hash, check_password_hash
 from flask_login import UserMixin
 from hashlib import md5
 import jwt
 from time import time
-from app import App
+
 
 
 
@@ -53,12 +53,12 @@ class Usuario(UserMixin):
     def get_reset_password_token(self, expires_in=600):
         return jwt.encode(
             {'reset_password': self.id, 'exp': time() + expires_in},
-            App.config['SECRET_KEY'], algorithm='HS256').decode('utf-8')
+            current_app.config['SECRET_KEY'], algorithm='HS256').decode('utf-8')
 
     @staticmethod
     def verify_reset_password_token(token):
         try:
-            id = jwt.decode(token, App.config['SECRET_KEY'],
+            id = jwt.decode(token, current_app.config['SECRET_KEY'],
             algorithms=['HS256'])['reset_password']
         except:
             return
@@ -69,9 +69,12 @@ class Usuario(UserMixin):
 
 class Post:
 
+
     def __init__(self, body, author):
         self.body = body
         self.author = author
+
+    timestamp = datetime.utcnow()
 
     def __repr__(self):
         return f'<Post {self.body}>'
@@ -79,7 +82,10 @@ class Post:
 
 @login.user_loader
 def load_user(username):
-    u = Usuario(mongo.db.usuario.find_one({"_id": username}))
+    q = mongo.db.usuario.find_one({"_id": username})
+    if q is None:
+        return None
+    u = Usuario(q)
     if not u:
         return None
     return u

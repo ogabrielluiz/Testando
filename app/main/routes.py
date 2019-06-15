@@ -1,8 +1,8 @@
 from app import App, mongo
 from flask import render_template, flash, redirect, url_for, request, current_app
 from flask_login import current_user, login_user, logout_user, login_required
-from app.forms import LoginForm, RegistrationForm, EditProfileForm, PostForm, ResetPasswordRequestForm
-from app.forms import ResetPasswordForm
+from app.main.forms import EditProfileForm, PostForm
+
 from app.models import Usuario, Post
 from werkzeug.urls import url_parse
 from werkzeug.security import generate_password_hash

@@ -19,9 +19,6 @@ bootstrap = Bootstrap()
 moment = Moment()
 
 
-from app import routes, models
-
-
 def create_app(config_class=Config):
     app = Flask(__name__)
     app.config.from_object(Config)
