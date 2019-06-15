@@ -6,7 +6,6 @@ from app.models import Usuario
 from app import mongo
 
 
-
 class LoginForm(FlaskForm):
 
     username = StringField('Username', validators=[DataRequired()])
@@ -33,10 +32,10 @@ class RegistrationForm(FlaskForm):
             raise ValidationError("Escolha um email diferente.")
 
 
-
 class ResetPasswordRequestForm(FlaskForm):
     email = StringField('Email', validators=[DataRequired(), Email()])
     submit = SubmitField('Request Password Reset')
+
 
 class ResetPasswordForm(FlaskForm):
     password = PasswordField('Password', validators=[DataRequired(), Email()])

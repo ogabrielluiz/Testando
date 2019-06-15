@@ -10,10 +10,10 @@ flask-wtf = "*"
 flask-pymongo = "*"
 flask-login = "*"
 mockupdb = "*"
-flask-update = "*"
 flask-mail = "*"
 pyjwt = "*"
 flask-bootstrap = "*"
+flask-moment = "*"
 
 [dev-packages]
 
